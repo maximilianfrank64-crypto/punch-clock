@@ -27,7 +27,7 @@ round times by your own rules, and export timesheets as CSV, Excel, PDF, JSON, t
   monthly reminder (configurable), persistent storage request with status in Settings.
 - **Settings:** 12/24 h, week start, language, theme (system/light/dark), h:mm or decimal
   durations, automatic break deduction, daily/weekly targets with workdays, hourly rate +
-  currency, default export format and range, delete all data.
+  currency + optional flat tax/deductions percentage (estimated earnings after tax), default export format and range, delete all data.
 
 ## Development
 

@@ -31,6 +31,7 @@ export interface ExportLabels {
   target: string;
   overtime: string;
   earnings: string;
+  earningsAfterTax: string;
   shifts: string;
   weeklyTotals: string;
   monthlyTotals: string;
@@ -138,6 +139,13 @@ export function totalsCells(t: Totals, report: Report, ctx: ExportContext): stri
   }
   if (report.currency) {
     cells.push(t.earnings === null ? '' : formatMoney(t.earnings, report.currency, ctx.lang));
+    if (report.taxPercent !== null) {
+      cells.push(
+        t.earningsAfterTax === null
+          ? ''
+          : formatMoney(t.earningsAfterTax, report.currency, ctx.lang),
+      );
+    }
   }
   return cells;
 }
@@ -147,6 +155,9 @@ export function totalsHeader(report: Report, ctx: ExportContext): string[] {
   const h = [l.worked, l.breaks, l.shifts];
   if (hasTargets(report)) h.push(l.target, l.overtime);
   if (report.currency) h.push(l.earnings);
+  if (report.currency && report.taxPercent !== null) {
+    h.push(l.earningsAfterTax.replace('{percent}', String(report.taxPercent)));
+  }
   return h;
 }
 

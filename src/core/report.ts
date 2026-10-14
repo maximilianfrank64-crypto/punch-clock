@@ -31,6 +31,8 @@ export interface Totals {
   overtimeMs: number | null;
   /** Earnings in currency units; null when the hourly rate is disabled. */
   earnings: number | null;
+  /** Estimated earnings after the user's flat tax rate; null when no tax rate is set. */
+  earningsAfterTax: number | null;
 }
 
 export interface DayReport extends Totals {
@@ -54,6 +56,8 @@ export interface Report {
   generatedAt: number;
   useRaw: boolean;
   currency: string | null;
+  /** Tax percentage used for the after-tax estimate; null when not shown. */
+  taxPercent: number | null;
   days: DayReport[];
   /** Days that have shifts or a day note (for listings and exports). */
   listedDays: DayReport[];
@@ -87,6 +91,7 @@ function emptyTotals(): Totals {
     targetMs: null,
     overtimeMs: null,
     earnings: null,
+    earningsAfterTax: null,
   };
 }
 
@@ -96,7 +101,6 @@ function addInto(into: Totals, t: Totals) {
   into.grossMs += t.grossMs;
   into.shiftCount += t.shiftCount;
   if (t.targetMs !== null) into.targetMs = (into.targetMs ?? 0) + t.targetMs;
-  if (t.earnings !== null) into.earnings = (into.earnings ?? 0) + t.earnings;
 }
 
 function finish(t: Totals): Totals {
@@ -104,8 +108,28 @@ function finish(t: Totals): Totals {
   return t;
 }
 
-const earningsFor = (netMs: number, settings: Settings) =>
-  settings.rate.enabled ? Math.round((netMs / HOUR) * settings.rate.hourlyRate * 100) / 100 : null;
+const cents = (v: number) => Math.round(v * 100) / 100;
+
+/** Whether an after-tax estimate is shown (hourly rate on and a tax rate set). */
+export const showsAfterTax = (settings: Settings) =>
+  settings.rate.enabled && settings.rate.taxPercent > 0;
+
+/**
+ * Earnings for a period, always computed from its summed net time (not from
+ * summed per-day cents, which would drift).
+ */
+function setEarnings(t: Totals, settings: Settings): void {
+  if (!settings.rate.enabled) {
+    t.earnings = null;
+    t.earningsAfterTax = null;
+    return;
+  }
+  const gross = cents((t.netMs / HOUR) * settings.rate.hourlyRate);
+  t.earnings = gross;
+  t.earningsAfterTax = showsAfterTax(settings)
+    ? cents(gross * (1 - settings.rate.taxPercent / 100))
+    : null;
+}
 
 /**
  * Daily target applies to configured workdays up to and including today
@@ -162,7 +186,7 @@ export function buildReport(
       t.shiftCount += 1;
     }
     t.targetMs = dailyTarget(date, settings, todayKey);
-    t.earnings = earningsFor(t.netMs, settings);
+    setEarnings(t, settings);
     return { date, shifts, note: dayNotes[date]?.text.trim() ?? '', ...finish(t) };
   });
 
@@ -181,19 +205,19 @@ export function buildReport(
       finish(m);
     }
   }
-  // Earnings from summed net time (not summed per-day cents) to avoid rounding drift.
-  for (const p of [...weeks, ...months]) p.earnings = earningsFor(p.netMs, settings);
+  for (const p of [...weeks, ...months]) setEarnings(p, settings);
 
   const total = emptyTotals();
   for (const w of weeks) addInto(total, w);
   finish(total);
-  if (settings.rate.enabled) total.earnings = earningsFor(total.netMs, settings);
+  setEarnings(total, settings);
 
   return {
     range,
     generatedAt: now,
     useRaw,
     currency: settings.rate.enabled ? settings.rate.currency : null,
+    taxPercent: showsAfterTax(settings) ? settings.rate.taxPercent : null,
     days,
     listedDays: days.filter((d) => d.shiftCount > 0 || d.note !== ''),
     weeks,

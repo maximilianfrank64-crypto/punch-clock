@@ -241,6 +241,16 @@ export function SettingsScreen() {
               }))}
               onChange={(v) => set('rate', { ...s.rate, currency: v })}
             />
+            <NumberField
+              label={t('settings.taxPercent')}
+              help={t('settings.taxPercentHelp')}
+              value={s.rate.taxPercent}
+              min={0}
+              max={100}
+              step={0.5}
+              suffix="%"
+              onChange={(v) => set('rate', { ...s.rate, taxPercent: v })}
+            />
           </div>
         )}
       </Section>

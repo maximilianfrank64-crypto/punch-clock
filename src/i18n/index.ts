@@ -51,6 +51,7 @@ export function exportLabels(lang: Language): ExportLabels {
     'target',
     'overtime',
     'earnings',
+    'earningsAfterTax',
     'shifts',
     'weeklyTotals',
     'monthlyTotals',

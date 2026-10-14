@@ -161,6 +161,17 @@ export function HomeScreen() {
             <span className="stat-value">
               {formatMoney(today.earnings, settings.rate.currency, settings.language)}
             </span>
+            {today.earningsAfterTax !== null && (
+              <span className="stat-sub">
+                {t('punch.afterTax', {
+                  amount: formatMoney(
+                    today.earningsAfterTax,
+                    settings.rate.currency,
+                    settings.language,
+                  ),
+                })}
+              </span>
+            )}
           </div>
         )}
         {current && current.breakMs > 0 && (

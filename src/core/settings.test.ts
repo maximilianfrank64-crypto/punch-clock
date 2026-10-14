@@ -30,6 +30,12 @@ describe('settings', () => {
     expect(sanitizeSettings(null)).toEqual(defaultSettings());
   });
 
+  it('tax percent defaults to 0 for old saved settings and is clamped to 0–100', () => {
+    expect(sanitizeSettings({ rate: { enabled: true, hourlyRate: 15 } }).rate.taxPercent).toBe(0);
+    expect(sanitizeSettings({ rate: { taxPercent: 150 } }).rate.taxPercent).toBe(100);
+    expect(sanitizeSettings({ rate: { taxPercent: 27.5 } }).rate.taxPercent).toBe(27.5);
+  });
+
   it('detects language', () => {
     expect(detectLanguage(['de-AT', 'en'])).toBe('de');
     expect(detectLanguage(['fr-FR', 'en-GB'])).toBe('en');

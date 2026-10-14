@@ -242,6 +242,7 @@ export function NumberField({
   max,
   step = 1,
   suffix,
+  help,
 }: {
   label: string;
   value: number;
@@ -250,8 +251,10 @@ export function NumberField({
   max?: number;
   step?: number;
   suffix?: string;
+  help?: string;
 }) {
   const id = useId();
+  const describedBy = [suffix && `${id}-s`, help && `${id}-h`].filter(Boolean).join(' ');
   const [text, setText] = useState(String(value));
   useEffect(() => setText(String(value)), [value]);
   const commit = () => {
@@ -278,7 +281,7 @@ export function NumberField({
           onKeyDown={(e) => {
             if (e.key === 'Enter') commit();
           }}
-          aria-describedby={suffix ? `${id}-s` : undefined}
+          aria-describedby={describedBy || undefined}
           data-step={step}
         />
         {suffix && (
@@ -287,6 +290,11 @@ export function NumberField({
           </span>
         )}
       </div>
+      {help && (
+        <small id={`${id}-h`} className="muted">
+          {help}
+        </small>
+      )}
     </div>
   );
 }

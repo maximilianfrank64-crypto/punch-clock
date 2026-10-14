@@ -57,7 +57,12 @@ export function defaultSettings(language: Language = 'en'): Settings {
       weeklyHours: 40,
       workdays: [1, 2, 3, 4, 5],
     },
-    rate: { enabled: false, hourlyRate: 0, currency: language === 'de' ? 'EUR' : 'USD' },
+    rate: {
+      enabled: false,
+      hourlyRate: 0,
+      currency: language === 'de' ? 'EUR' : 'USD',
+      taxPercent: 0,
+    },
     exportFormat: 'csv',
     exportRange: 'thisMonth',
     backupReminderDays: 30,
@@ -150,6 +155,7 @@ export function sanitizeSettings(input: unknown, base: Settings = defaultSetting
         typeof rt.currency === 'string' && /^[A-Z]{3}$/.test(rt.currency)
           ? rt.currency
           : base.rate.currency,
+      taxPercent: num(rt.taxPercent, base.rate.taxPercent, 0, 100),
     },
     exportFormat: pick(input.exportFormat, EXPORT_FORMATS, base.exportFormat),
     exportRange: pick(input.exportRange, RANGE_PRESETS, base.exportRange),

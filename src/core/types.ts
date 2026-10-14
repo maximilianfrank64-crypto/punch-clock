@@ -73,6 +73,11 @@ export interface RateSettings {
   hourlyRate: number;
   /** ISO 4217 code, e.g. EUR, USD. */
   currency: string;
+  /**
+   * Flat percentage for taxes and social contributions (0–100), used to estimate
+   * earnings after tax. 0 = don't show. Deliberately simple: users enter their own rate.
+   */
+  taxPercent: number;
 }
 
 export interface Settings {

@@ -93,6 +93,30 @@ describe('day notes', () => {
   });
 });
 
+describe('after-tax column', () => {
+  it('appears only when a tax rate is set', () => {
+    const rate = { enabled: true, hourlyRate: 20, currency: 'EUR', taxPercent: 25 };
+    const r = buildReport(
+      data,
+      { from: '2026-10-12', to: '2026-10-18' },
+      plainSettings({ rate }),
+      NOW,
+    );
+    const csv = buildCsv(r, ctx('de'));
+    expect(csv).toContain('Verdienst;Nach Steuern (25 %)');
+    expect(csv).toMatch(/Gesamt;12:00;0:30;2;240,00\s€;180,00\s€/);
+
+    const withoutTax = buildReport(
+      data,
+      { from: '2026-10-12', to: '2026-10-18' },
+      plainSettings({ rate: { ...rate, taxPercent: 0 } }),
+      NOW,
+    );
+    expect(buildCsv(withoutTax, ctx('de'))).not.toContain('Nach Steuern');
+    expect(JSON.parse(buildJson(r)).total.earningsAfterTax).toBe(180);
+  });
+});
+
 describe('JSON', () => {
   it('is valid and contains ISO times and totals', () => {
     const json = JSON.parse(buildJson(report));

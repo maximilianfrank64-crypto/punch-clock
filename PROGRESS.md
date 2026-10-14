@@ -22,9 +22,13 @@ commit once lint/typecheck/tests could run; milestone 7 and the browser-test fix
   backups without notes still restore). IndexedDB schema v2 adds the `dayNotes` table; upgrade from
   v1 tested in the browser with existing data. The per-entry note stays in the entry editor.
 
+- **Tax rate** (user request): optional flat "taxes & deductions" percentage next to the hourly
+  rate; shows estimated earnings after tax on Home, in History and as an extra export column.
+  Intentionally a single user-entered percentage (works for every country), labelled as an estimate.
+
 ## Verified
 
-- `npm run check`: ESLint, `tsc --noEmit` (strict), 87 Vitest unit tests – all green.
+- `npm run check`: ESLint, `tsc --noEmit` (strict), 90 Vitest unit tests – all green.
 - `npm run build`: production build + service worker (30 precached files, ~1.6 MB).
 - Browser test (375×812, production build):
   - punch in (13:23 → rounded 13:30), start break, punch out during break, state survives reload

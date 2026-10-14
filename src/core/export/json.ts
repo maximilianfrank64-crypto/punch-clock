@@ -11,6 +11,7 @@ function totals(t: Totals) {
     targetHours: t.targetMs === null ? null : hoursDecimal(t.targetMs),
     overtimeHours: t.overtimeMs === null ? null : hoursDecimal(t.overtimeMs),
     earnings: t.earnings,
+    earningsAfterTax: t.earningsAfterTax,
   };
 }
 
@@ -24,6 +25,7 @@ export function buildJson(report: Report): string {
     range: report.range,
     times: report.useRaw ? 'raw' : 'rounded',
     currency: report.currency,
+    taxPercent: report.taxPercent,
     days: report.listedDays.map((d) => ({
       date: d.date,
       note: d.note,

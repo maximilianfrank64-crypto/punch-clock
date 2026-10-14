@@ -83,10 +83,36 @@ describe('buildReport', () => {
   });
 
   it('earnings use the hourly rate', () => {
-    const settings = plainSettings({ rate: { enabled: true, hourlyRate: 20, currency: 'EUR' } });
+    const settings = plainSettings({
+      rate: { enabled: true, hourlyRate: 20, currency: 'EUR', taxPercent: 0 },
+    });
     const r = buildReport(data, { from: '2026-10-12', to: '2026-10-18' }, settings, NOW);
     expect(r.total.earnings).toBe(26.5 * 20);
     expect(r.currency).toBe('EUR');
+  });
+
+  it('estimates earnings after tax with a flat rate', () => {
+    const rate = { enabled: true, hourlyRate: 20, currency: 'EUR', taxPercent: 30 };
+    const r = buildReport(
+      data,
+      { from: '2026-10-12', to: '2026-10-18' },
+      plainSettings({ rate }),
+      NOW,
+    );
+    expect(r.total.earnings).toBe(530);
+    expect(r.total.earningsAfterTax).toBe(371);
+    expect(r.taxPercent).toBe(30);
+    // Tuesday: 8.5 h × 20 = 170 → 119 after 30 %
+    expect(r.days.find((d) => d.date === '2026-10-13')!.earningsAfterTax).toBe(119);
+
+    const noTax = buildReport(
+      data,
+      { from: '2026-10-12', to: '2026-10-18' },
+      plainSettings({ rate: { ...rate, taxPercent: 0 } }),
+      NOW,
+    );
+    expect(noTax.total.earningsAfterTax).toBeNull();
+    expect(noTax.taxPercent).toBeNull();
   });
 
   it('uses raw or rounded times per setting', () => {

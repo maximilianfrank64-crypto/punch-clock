@@ -121,6 +121,13 @@ export function HistoryScreen() {
             <span className="stat-value small">
               {formatMoney(tot.earnings, report.currency, lang)}
             </span>
+            {tot.earningsAfterTax !== null && (
+              <span className="stat-sub">
+                {t('punch.afterTax', {
+                  amount: formatMoney(tot.earningsAfterTax, report.currency, lang),
+                })}
+              </span>
+            )}
           </div>
         )}
       </div>
