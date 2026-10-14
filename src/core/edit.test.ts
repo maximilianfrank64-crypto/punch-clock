@@ -48,6 +48,13 @@ describe('shiftFromForm', () => {
     ).toBe(true);
   });
 
+  it('end equal to start stays on the same day (zero-length, not 24h)', () => {
+    const f = { date: '2026-10-14', start: '13:30', end: '13:30', breaks: [], note: '' };
+    const res = shiftFromForm(f, base);
+    expect(res.ok && res.shift.end!.rounded).toBe(at(2026, 10, 14, 13, 30));
+    expect(isNextDay(f, '13:30')).toBe(false);
+  });
+
   it('applies rounding rules when asked', () => {
     const res = shiftFromForm(
       { date: '2026-10-14', start: '07:47', end: '15:55', breaks: [], note: '' },

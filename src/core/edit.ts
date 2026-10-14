@@ -93,7 +93,7 @@ export function shiftFromForm(
   if (form.end.trim() === '') {
     if (!opts.allowOpen) return { ok: false, error: 'endRequired' };
   } else {
-    end = resolveTime(form.date, form.end, start + 1);
+    end = resolveTime(form.date, form.end, start);
     if (end === null) return { ok: false, error: 'invalid' };
     if (end - start > DAY_MS) return { ok: false, error: 'tooLong' };
   }
@@ -136,6 +136,6 @@ export function shiftFromForm(
 export function isNextDay(form: ShiftForm, time: string): boolean {
   const start = resolveTime(form.date, form.start);
   if (start === null || time.trim() === '') return false;
-  const t = resolveTime(form.date, time, start + 1);
+  const t = resolveTime(form.date, time, start);
   return t !== null && dayKey(t) !== form.date;
 }

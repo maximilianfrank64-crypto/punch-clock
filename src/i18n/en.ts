@@ -100,7 +100,7 @@ export const en = {
   'export.share': 'Share',
   'export.download': 'Download',
   'export.preview': 'Summary',
-  'export.days': '{n} days with entries',
+  'export.days': 'Days with entries: {n}',
   'export.shareUnsupported':
     'Sharing files is not supported in this browser, so the file will be downloaded instead.',
   'export.done': 'Export created: {name}',
@@ -203,16 +203,16 @@ export const en = {
   'backup.mode.merge': 'Merge with existing entries',
   'backup.mode.replace': 'Replace everything on this device',
   'backup.confirmReplace':
-    'This replaces all current entries and settings with the backup ({n} entries). Continue?',
-  'backup.restored': 'Restored {n} entries.',
-  'backup.skipped': '{n} invalid entries were skipped.',
+    'This replaces all current entries and settings with the backup (entries: {n}). Continue?',
+  'backup.restored': 'Restored. Entries: {n}',
+  'backup.skipped': 'Invalid entries skipped: {n}',
   'backup.err.invalid-json': 'This file is not valid JSON.',
   'backup.err.not-a-backup': 'This file is not a Punch Clock backup.',
   'backup.err.newer-version': 'This backup was made by a newer version of the app. Please update.',
   'backup.reminder':
     "It's been a while since your last backup. Save one now so you don't lose your hours.",
   'backup.reminderAction': 'Back up now',
-  'backup.entries': '{n} entries on this device',
+  'backup.entries': 'Entries on this device: {n}',
 
   'about.title': 'About & Privacy',
   'about.text':

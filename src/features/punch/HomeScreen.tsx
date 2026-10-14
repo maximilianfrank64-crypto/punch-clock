@@ -73,9 +73,9 @@ export function HomeScreen() {
     }
   };
 
-  // Live numbers use the same rules as reports (rounded times, auto-break).
-  const calcOpts = { useRaw: settings.useRawInReports, now, autoBreak: settings.autoBreak };
-  const current = active ? calcShift(active, calcOpts) : null;
+  // The big timer shows real elapsed time (a rounded-up start would make it look frozen);
+  // today/week totals below use the report rules (rounding, auto-break).
+  const current = active ? calcShift(active, { useRaw: true, now }) : null;
   const currentBreak = active ? openBreak(active) : undefined;
 
   const minuteNow = Math.floor(now / 60_000);

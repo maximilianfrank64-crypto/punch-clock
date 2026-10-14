@@ -598,6 +598,12 @@ fieldset {
   grid-template-columns: 1.3fr 1fr;
   gap: 12px;
 }
+@media (max-width: 420px) {
+  .rule-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
 .rule-example {
   margin-top: -4px;
 }

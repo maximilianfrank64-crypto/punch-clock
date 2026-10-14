@@ -101,7 +101,7 @@ export const de: Messages = {
   'export.share': 'Teilen',
   'export.download': 'Herunterladen',
   'export.preview': 'Übersicht',
-  'export.days': '{n} Tage mit Einträgen',
+  'export.days': 'Tage mit Einträgen: {n}',
   'export.shareUnsupported':
     'Dieser Browser kann keine Dateien teilen. Die Datei wird stattdessen heruntergeladen.',
   'export.done': 'Export erstellt: {name}',
@@ -206,9 +206,9 @@ export const de: Messages = {
   'backup.mode.merge': 'Mit vorhandenen Einträgen zusammenführen',
   'backup.mode.replace': 'Alles auf diesem Gerät ersetzen',
   'backup.confirmReplace':
-    'Damit werden alle aktuellen Einträge und Einstellungen durch die Sicherung ersetzt ({n} Einträge). Fortfahren?',
-  'backup.restored': '{n} Einträge wiederhergestellt.',
-  'backup.skipped': '{n} ungültige Einträge wurden übersprungen.',
+    'Damit werden alle aktuellen Einträge und Einstellungen durch die Sicherung ersetzt (Einträge: {n}). Fortfahren?',
+  'backup.restored': 'Wiederhergestellt. Einträge: {n}',
+  'backup.skipped': 'Übersprungene ungültige Einträge: {n}',
   'backup.err.invalid-json': 'Diese Datei ist kein gültiges JSON.',
   'backup.err.not-a-backup': 'Das ist keine Sicherung der Stempeluhr.',
   'backup.err.newer-version':
@@ -216,7 +216,7 @@ export const de: Messages = {
   'backup.reminder':
     'Deine letzte Sicherung ist schon eine Weile her. Speicher jetzt eine, damit keine Stunden verloren gehen.',
   'backup.reminderAction': 'Jetzt sichern',
-  'backup.entries': '{n} Einträge auf diesem Gerät',
+  'backup.entries': 'Einträge auf diesem Gerät: {n}',
 
   'about.title': 'Info & Datenschutz',
   'about.text':

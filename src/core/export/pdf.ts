@@ -41,7 +41,7 @@ export function buildPdf(report: Report, ctx: ExportContext): Uint8Array {
     headStyles: { fillColor: ACCENT, textColor: 255, fontStyle: 'bold' as const },
     alternateRowStyles: { fillColor: [245, 246, 248] as [number, number, number] },
   };
-  let y = 90;
+  let y = 104;
   const after = () =>
     ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 22;
   const heading = (text: string) => {
@@ -75,13 +75,17 @@ export function buildPdf(report: Report, ctx: ExportContext): Uint8Array {
   });
   y = after();
 
-  const totalsTable = (title: string, label: string, body: string[][]) => {
+  const totalsTable = (title: string, label: string, body: string[][], foot?: string[]) => {
     heading(title);
     autoTable(doc, {
       ...base,
       startY: y,
       head: [[label, ...totalsHeader(report, ctx)].map(s)],
       body: body.map((r) => r.map(s)),
+      // Grand total as the last table's footer, so its columns line up.
+      foot: foot ? [foot.map(s)] : undefined,
+      footStyles: { fillColor: ACCENT, textColor: 255, fontStyle: 'bold', fontSize: 10 },
+      showFoot: 'lastPage',
     });
     y = after();
   };
@@ -98,16 +102,8 @@ export function buildPdf(report: Report, ctx: ExportContext): Uint8Array {
     report.months
       .filter((m) => m.shiftCount > 0 || m.targetMs)
       .map((m) => [periodLabel(m, 'month', ctx), ...totalsCells(m, report, ctx)]),
+    [l.total, ...totalsCells(report.total, report, ctx)],
   );
-
-  autoTable(doc, {
-    ...base,
-    startY: y - 12,
-    head: [[l.total, ...totalsHeader(report, ctx)].map(s)],
-    body: [['', ...totalsCells(report.total, report, ctx)].map(s)],
-    bodyStyles: { fontStyle: 'bold', fontSize: 11 },
-  });
-  y = after();
 
   doc.setFontSize(8);
   doc.setTextColor(110);
