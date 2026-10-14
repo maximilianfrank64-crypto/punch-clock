@@ -1133,3 +1133,33 @@ fieldset {
 .day-note:hover {
   background: var(--surface-2);
 }
+
+/* ---------- Feedback ---------- */
+.feedback-actions {
+  display: grid;
+  gap: 10px;
+}
+.feedback-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+}
+.feedback-card:hover {
+  border-color: var(--primary);
+}
+.feedback-card > span {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+}
+.feedback-icon {
+  flex: none;
+  color: var(--primary);
+}

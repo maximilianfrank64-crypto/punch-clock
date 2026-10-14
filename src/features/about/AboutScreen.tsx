@@ -17,6 +17,9 @@ export function AboutScreen() {
           </div>
         </div>
         <p>{t('about.text')}</p>
+        <a className="btn" href={href('feedback')}>
+          <Icon name="idea" /> {t('nav.feedback')}
+        </a>
       </Section>
       <Section title={t('about.privacyTitle')} id="a-privacy">
         <div className="callout">

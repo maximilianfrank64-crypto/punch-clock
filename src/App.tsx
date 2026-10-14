@@ -3,6 +3,7 @@ import { backupDue } from './core/backup';
 import { AboutScreen } from './features/about/AboutScreen';
 import { BackupScreen } from './features/backup/BackupScreen';
 import { ExportScreen } from './features/export/ExportScreen';
+import { FeedbackScreen } from './features/feedback/FeedbackScreen';
 import { HistoryScreen } from './features/history/HistoryScreen';
 import { HomeScreen } from './features/punch/HomeScreen';
 import { SettingsScreen } from './features/settings/SettingsScreen';
@@ -20,6 +21,7 @@ const NAV: { route: Route; icon: IconName; label: MessageKey }[] = [
   { route: 'export', icon: 'export', label: 'nav.export' },
   { route: 'settings', icon: 'settings', label: 'nav.settings' },
   { route: 'backup', icon: 'backup', label: 'nav.backup' },
+  { route: 'feedback', icon: 'idea', label: 'nav.feedback' },
   { route: 'about', icon: 'about', label: 'nav.about' },
 ];
 
@@ -29,6 +31,7 @@ const SCREENS: Record<Route, () => JSX.Element> = {
   export: ExportScreen,
   settings: SettingsScreen,
   backup: BackupScreen,
+  feedback: FeedbackScreen,
   about: AboutScreen,
 };
 

@@ -29,6 +29,11 @@ round times by your own rules, and export timesheets as CSV, Excel, PDF, JSON, t
   durations, automatic break deduction, daily/weekly targets with workdays, hourly rate +
   currency + optional flat tax/deductions percentage (estimated earnings after tax), default export format and range, delete all data.
 
+## Feedback
+
+Ideas and bug reports: in the app under **Feedback & Ideas**, or directly via
+[GitHub issues](https://github.com/maximilianfrank64-crypto/punch-clock/issues/new/choose).
+
 ## Development
 
 Requirements: Node.js 20+ (22 LTS recommended).

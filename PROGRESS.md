@@ -26,9 +26,14 @@ commit once lint/typecheck/tests could run; milestone 7 and the browser-test fix
   rate; shows estimated earnings after tax on Home, in History and as an extra export column.
   Intentionally a single user-entered percentage (works for every country), labelled as an estimate.
 
+- **Feedback & Ideas page** (user request): opens pre-filled GitHub issue forms (idea / bug,
+  bilingual DE/EN in `.github/ISSUE_TEMPLATE`). Only app version, language and coarse device type
+  are pre-filled; no user data. Optional account-free form via `FEEDBACK_FORM_URL` in `src/config.ts`.
+  Version bumped to 1.1.0.
+
 ## Verified
 
-- `npm run check`: ESLint, `tsc --noEmit` (strict), 90 Vitest unit tests – all green.
+- `npm run check`: ESLint, `tsc --noEmit` (strict), 92 Vitest unit tests – all green.
 - `npm run build`: production build + service worker (30 precached files, ~1.6 MB).
 - Browser test (375×812, production build):
   - punch in (13:23 → rounded 13:30), start break, punch out during break, state survives reload

@@ -4,7 +4,15 @@ import { useSyncExternalStore } from 'react';
  * Minimal hash router. Hash URLs work on any static host (GitHub Pages) and
  * inside an installed iOS web app without server rewrites.
  */
-export const ROUTES = ['home', 'history', 'export', 'settings', 'backup', 'about'] as const;
+export const ROUTES = [
+  'home',
+  'history',
+  'export',
+  'settings',
+  'backup',
+  'feedback',
+  'about',
+] as const;
 export type Route = (typeof ROUTES)[number];
 
 function parse(hash: string): Route {

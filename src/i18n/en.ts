@@ -10,6 +10,7 @@ export const en = {
   'nav.settings': 'Settings',
   'nav.backup': 'Backup & Restore',
   'nav.about': 'About & Privacy',
+  'nav.feedback': 'Feedback & Ideas',
 
   'common.save': 'Save',
   'common.cancel': 'Cancel',
@@ -224,6 +225,20 @@ export const en = {
   'backup.reminderAction': 'Back up now',
   'backup.entries': 'Entries on this device: {n}',
 
+  'feedback.intro':
+    'Missing something, or found a bug? I read every suggestion and use them to decide what to build next.',
+  'feedback.idea': 'Suggest an idea',
+  'feedback.ideaHint': 'A feature, an improvement, anything that would help you.',
+  'feedback.bug': 'Report a bug',
+  'feedback.bugHint': 'Something doesn’t work or looks wrong.',
+  'feedback.howTitle': 'How it works',
+  'feedback.how':
+    'The buttons open a short form on GitHub. You need a free GitHub account. Your post is public, so please don’t include personal data or your working hours. The app adds only its version, language and device type (e.g. "iPhone · installed app").',
+  'feedback.noAccount': 'No GitHub account? Use the form without an account:',
+  'feedback.form': 'Open feedback form',
+  'feedback.alt': 'Or simply comment where you found the app (e.g. the Reddit post).',
+  'feedback.privacy': 'Nothing is sent from the app itself. Your entries never leave this device.',
+
   'about.title': 'About & Privacy',
   'about.text':
     'Punch Clock is a simple, private time tracker for logging your own working hours independently of your employer.',
@@ -239,6 +254,7 @@ export const en = {
   'about.installTitle': 'Install on iPhone',
   'about.install': 'Open this page in Safari, tap the Share button, then "Add to Home Screen".',
   'about.version': 'Version {v}',
+  'about.feedback': 'Ideas or problems? Tell me under Feedback & Ideas.',
 
   'update.available': 'A new version is available.',
   'update.reload': 'Update',

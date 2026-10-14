@@ -11,6 +11,7 @@ export const de: Messages = {
   'nav.settings': 'Einstellungen',
   'nav.backup': 'Sicherung',
   'nav.about': 'Info & Datenschutz',
+  'nav.feedback': 'Feedback & Ideen',
 
   'common.save': 'Speichern',
   'common.cancel': 'Abbrechen',
@@ -228,6 +229,21 @@ export const de: Messages = {
   'backup.reminderAction': 'Jetzt sichern',
   'backup.entries': 'Einträge auf diesem Gerät: {n}',
 
+  'feedback.intro':
+    'Dir fehlt etwas oder du hast einen Fehler gefunden? Ich lese jeden Vorschlag und entscheide danach, was als Nächstes kommt.',
+  'feedback.idea': 'Idee vorschlagen',
+  'feedback.ideaHint': 'Eine Funktion, eine Verbesserung, alles, was dir helfen würde.',
+  'feedback.bug': 'Fehler melden',
+  'feedback.bugHint': 'Etwas funktioniert nicht oder sieht falsch aus.',
+  'feedback.howTitle': 'So funktioniert es',
+  'feedback.how':
+    'Die Knöpfe öffnen ein kurzes Formular auf GitHub. Dafür brauchst du ein kostenloses GitHub-Konto. Dein Beitrag ist öffentlich, also bitte keine persönlichen Daten oder Arbeitszeiten hineinschreiben. Die App trägt nur ihre Version, die Sprache und den Gerätetyp ein (z. B. „iPhone · installed app").',
+  'feedback.noAccount': 'Kein GitHub-Konto? Nutze das Formular ohne Konto:',
+  'feedback.form': 'Feedback-Formular öffnen',
+  'feedback.alt':
+    'Oder schreib einfach einen Kommentar dort, wo du die App gefunden hast (z. B. unter dem Reddit-Beitrag).',
+  'feedback.privacy': 'Die App selbst sendet nichts. Deine Einträge verlassen nie dieses Gerät.',
+
   'about.title': 'Info & Datenschutz',
   'about.text':
     'Die Stempeluhr ist ein einfacher, privater Zeiterfasser. Damit hältst du deine Arbeitszeit selbst fest, unabhängig vom Arbeitgeber.',
@@ -244,6 +260,7 @@ export const de: Messages = {
   'about.install':
     'Öffne diese Seite in Safari, tippe auf „Teilen" und dann auf „Zum Home-Bildschirm".',
   'about.version': 'Version {v}',
+  'about.feedback': 'Ideen oder Probleme? Sag Bescheid unter Feedback & Ideen.',
 
   'update.available': 'Eine neue Version ist da.',
   'update.reload': 'Aktualisieren',
