@@ -1,6 +1,7 @@
 import { normalizeShift } from './punch';
 import { sanitizeSettings } from './settings';
-import type { Break, Settings, Shift, Stamp } from './types';
+import { isValidDayKey } from './periods';
+import type { Break, DayNote, Settings, Shift, Stamp } from './types';
 
 export const BACKUP_APP_ID = 'punch-clock';
 export const BACKUP_VERSION = 1;
@@ -11,16 +12,39 @@ export interface BackupFile {
   exportedAt: string;
   settings: Settings;
   shifts: Shift[];
+  /** Added later; older backups don't have it (treated as empty). */
+  dayNotes: DayNote[];
 }
 
-export function createBackup(shifts: Shift[], settings: Settings, now: number): BackupFile {
+export function createBackup(
+  shifts: Shift[],
+  settings: Settings,
+  now: number,
+  dayNotes: DayNote[] = [],
+): BackupFile {
   return {
     app: BACKUP_APP_ID,
     version: BACKUP_VERSION,
     exportedAt: new Date(now).toISOString(),
     settings,
     shifts,
+    dayNotes,
   };
+}
+
+function parseDayNotes(v: unknown, now: number): DayNote[] {
+  if (!Array.isArray(v)) return [];
+  const out = new Map<string, DayNote>();
+  for (const n of v) {
+    if (!isObj(n) || typeof n.date !== 'string' || !isValidDayKey(n.date)) continue;
+    if (typeof n.text !== 'string' || n.text.trim() === '') continue;
+    out.set(n.date, {
+      date: n.date,
+      text: n.text,
+      updatedAt: isTime(n.updatedAt) ? n.updatedAt : now,
+    });
+  }
+  return [...out.values()];
 }
 
 export type ParseResult =
@@ -106,6 +130,7 @@ export function parseBackup(text: string, now: number): ParseResult {
       exportedAt: typeof data.exportedAt === 'string' ? data.exportedAt : '',
       settings: sanitizeSettings(data.settings),
       shifts,
+      dayNotes: parseDayNotes(data.dayNotes, now),
     },
   };
 }
@@ -144,4 +169,14 @@ export function backupDue(opts: {
   const interval = opts.intervalDays * DAY;
   const last = Math.max(opts.lastBackupAt ?? 0, opts.dismissedAt ?? 0, opts.firstDataAt ?? 0);
   return opts.now - last >= interval;
+}
+
+/** Merge day notes: per date, the more recently updated note wins. */
+export function mergeDayNotes(existing: DayNote[], incoming: DayNote[]): DayNote[] {
+  const byDate = new Map(existing.map((n) => [n.date, n]));
+  for (const n of incoming) {
+    const cur = byDate.get(n.date);
+    if (!cur || n.updatedAt >= cur.updatedAt) byDate.set(n.date, n);
+  }
+  return [...byDate.values()];
 }

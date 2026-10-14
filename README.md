@@ -18,6 +18,8 @@ round times by your own rules, and export timesheets as CSV, Excel, PDF, JSON, t
   Reports use rounded times unless you switch on "Show exact times in reports".
 - **History:** day / week / month views, tap an entry to edit or delete, add entries manually,
   overnight shifts (+1 day) supported.
+- **Day notes:** optional note per calendar day ("what did I do today?") on the home screen and in
+  History, also for days without hours (vacation, sick). Exported as a "Day note" column.
 - **Export:** any date range; CSV, XLSX, PDF, JSON, TXT, HTML with per-shift rows, day totals,
   weekly and monthly totals. On iPhone the share sheet opens (Save to Files, Mail, AirDrop…);
   other browsers download the file.

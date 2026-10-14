@@ -25,7 +25,7 @@ export function buildText(report: Report, ctx: ExportContext): string {
   const l = ctx.labels;
   const out: string[] = [l.title, `${l.period}: ${rangeText(report, ctx)}`, ''];
 
-  if (report.workedDays.length === 0) {
+  if (report.listedDays.length === 0) {
     out.push(l.noData);
   } else {
     const rows = flatRows(report, ctx).map((r) => [
@@ -36,8 +36,11 @@ export function buildText(report: Report, ctx: ExportContext): string {
       r.worked,
       r.dayTotal,
       r.note.replace(/\s+/g, ' '),
+      r.dayNote.replace(/\s+/g, ' '),
     ]);
-    out.push(...table([l.date, l.start, l.end, l.breaks, l.worked, l.dayTotal, l.note], rows));
+    out.push(
+      ...table([l.date, l.start, l.end, l.breaks, l.worked, l.dayTotal, l.note, l.dayNote], rows),
+    );
   }
 
   out.push('', l.weeklyTotals);

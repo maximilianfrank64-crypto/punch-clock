@@ -43,11 +43,13 @@ describe('CSV', () => {
     const csv = buildCsv(report, ctx());
     expect(csv.startsWith('\uFEFF')).toBe(true);
     const lines = csv.slice(1).split('\r\n');
-    expect(lines).toContain('Date,Day,Start,End,Breaks,Worked,Hours (decimal),Day total,Note');
-    expect(csv).toContain(
-      '10/12/2026,Mon,08:00,16:30,0:30,8:00,8,8:00,"Client ""A"", on-site; <b>"',
+    expect(lines).toContain(
+      'Date,Day,Start,End,Breaks,Worked,Hours (decimal),Day total,Note,Day note',
     );
-    expect(csv).toContain('10/13/2026,Tue,22:00,02:00 (+1),0:00,4:00,4,4:00,');
+    expect(csv).toContain(
+      '10/12/2026,Mon,08:00,16:30,0:30,8:00,8,8:00,"Client ""A"", on-site; <b>",',
+    );
+    expect(csv).toContain('10/13/2026,Tue,22:00,02:00 (+1),0:00,4:00,4,4:00,,');
     expect(csv).toContain('Total,12:00,0:30,2');
   });
 
@@ -61,6 +63,33 @@ describe('CSV', () => {
     const csv = buildCsv(r, ctx('de'));
     expect(csv).toContain('Datum;Tag;Beginn;Ende;Pausen;Arbeitszeit');
     expect(csv).toContain(';7,75;');
+  });
+});
+
+describe('day notes', () => {
+  const notes = {
+    '2026-10-12': { text: 'Release v2, long meeting' },
+    '2026-10-15': { text: 'Sick' },
+  };
+  const r = buildReport(data, { from: '2026-10-12', to: '2026-10-18' }, settings, NOW, notes);
+
+  it('appear on the first row of their day; note-only days get their own row', () => {
+    const csv = buildCsv(r, ctx());
+    expect(csv).toContain('8:00,"Client ""A"", on-site; <b>","Release v2, long meeting"');
+    expect(csv).toContain('10/15/2026,Thu,,,,,,,,Sick');
+    // a note-only day does not change totals
+    expect(csv).toContain('Total,12:00,0:30,2');
+  });
+
+  it('are included in JSON, text, HTML', () => {
+    const json = JSON.parse(buildJson(r));
+    expect(json.days.map((d: { date: string; note: string }) => [d.date, d.note])).toEqual([
+      ['2026-10-12', 'Release v2, long meeting'],
+      ['2026-10-13', ''],
+      ['2026-10-15', 'Sick'],
+    ]);
+    expect(buildText(r, ctx())).toContain('Release v2, long meeting');
+    expect(buildHtml(r, ctx('de'))).toContain('<th>Tagesnotiz</th>');
   });
 });
 

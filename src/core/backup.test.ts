@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { at, plainSettings, shift } from '../test/helpers';
-import { backupDue, createBackup, mergeShifts, parseBackup } from './backup';
+import { backupDue, createBackup, mergeDayNotes, mergeShifts, parseBackup } from './backup';
 
 const DAY = 86_400_000;
 const NOW = at(2026, 10, 14, 12);
@@ -19,6 +19,25 @@ describe('backup round trip', () => {
     expect(res.backup.shifts).toEqual(shifts);
     expect(res.backup.settings).toEqual(settings);
     expect(res.skipped).toBe(0);
+  });
+
+  it('round-trips day notes and accepts older backups without them', () => {
+    const notes = [{ date: '2026-10-12', text: 'Kickoff', updatedAt: 5 }];
+    const res = parseBackup(JSON.stringify(createBackup([], plainSettings(), NOW, notes)), NOW);
+    expect(res.ok && res.backup.dayNotes).toEqual(notes);
+
+    const old = parseBackup('{"app":"punch-clock","version":1,"shifts":[]}', NOW);
+    expect(old.ok && old.backup.dayNotes).toEqual([]);
+
+    const bad = parseBackup(
+      JSON.stringify({
+        app: 'punch-clock',
+        shifts: [],
+        dayNotes: [{ date: '2026-02-30', text: 'x' }, { date: '2026-10-01', text: '  ' }, 'nope'],
+      }),
+      NOW,
+    );
+    expect(bad.ok && bad.backup.dayNotes).toEqual([]);
   });
 
   it('rejects non-backups and future versions', () => {
@@ -71,6 +90,16 @@ describe('mergeShifts', () => {
     const r1 = shift(at(2026, 10, 1, 8), null, [], { id: 'r1' });
     const r2 = shift(at(2026, 10, 2, 8), null, [], { id: 'r2' });
     expect(mergeShifts([r1], [r2]).map((s) => s.id)).toEqual(['r2']);
+  });
+});
+
+describe('mergeDayNotes', () => {
+  it('newer note per date wins', () => {
+    const a = { date: '2026-10-12', text: 'old', updatedAt: 1 };
+    const b = { date: '2026-10-12', text: 'new', updatedAt: 2 };
+    const c = { date: '2026-10-13', text: 'other', updatedAt: 1 };
+    expect(mergeDayNotes([a], [b, c])).toEqual([b, c]);
+    expect(mergeDayNotes([b], [a])).toEqual([b]);
   });
 });
 

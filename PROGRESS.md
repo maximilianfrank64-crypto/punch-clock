@@ -15,9 +15,16 @@
 Milestones 1–6 were written before Node.js was available on the machine, so they landed in one
 commit once lint/typecheck/tests could run; milestone 7 and the browser-test fixes are a second commit.
 
+## After launch
+
+- **Day notes** (user request): optional note per day, editable on Home ("Note for today") and in
+  History (also for days without entries); own column in all exports; included in backups (older
+  backups without notes still restore). IndexedDB schema v2 adds the `dayNotes` table; upgrade from
+  v1 tested in the browser with existing data. The per-entry note stays in the entry editor.
+
 ## Verified
 
-- `npm run check`: ESLint, `tsc --noEmit` (strict), 81 Vitest unit tests – all green.
+- `npm run check`: ESLint, `tsc --noEmit` (strict), 87 Vitest unit tests – all green.
 - `npm run build`: production build + service worker (30 precached files, ~1.6 MB).
 - Browser test (375×812, production build):
   - punch in (13:23 → rounded 13:30), start break, punch out during break, state survives reload

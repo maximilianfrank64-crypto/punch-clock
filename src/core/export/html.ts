@@ -27,7 +27,16 @@ export function buildHtml(report: Report, ctx: ExportContext): string {
   const l = ctx.labels;
   const entries = flatRows(report, ctx)
     .map((r) =>
-      row([`${r.weekday} ${r.date}`, r.start, r.end, r.breaks, r.worked, r.dayTotal, r.note]),
+      row([
+        `${r.weekday} ${r.date}`,
+        r.start,
+        r.end,
+        r.breaks,
+        r.worked,
+        r.dayTotal,
+        r.note,
+        r.dayNote,
+      ]),
     )
     .join('\n');
   const weeks = report.weeks
@@ -64,10 +73,10 @@ export function buildHtml(report: Report, ctx: ExportContext): string {
 <p class="meta">${escapeHtml(l.period)}: ${escapeHtml(rangeText(report, ctx))}</p>
 <h2>${escapeHtml(l.entries)}</h2>
 ${
-  report.workedDays.length === 0
+  report.listedDays.length === 0
     ? `<p>${escapeHtml(l.noData)}</p>`
     : `<table>
-<thead>${row([l.date, l.start, l.end, l.breaks, l.worked, l.dayTotal, l.note], 'th')}</thead>
+<thead>${row([l.date, l.start, l.end, l.breaks, l.worked, l.dayTotal, l.note, l.dayNote], 'th')}</thead>
 <tbody>
 ${entries}
 </tbody>

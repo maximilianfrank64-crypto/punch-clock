@@ -16,6 +16,7 @@ export function ExportScreen() {
   const t = useT();
   const settings = useSettings();
   const shifts = useApp((s) => s.shifts);
+  const dayNotes = useApp((s) => s.dayNotes);
   const toast = useApp((s) => s.toast);
   const [preset, setPreset] = useState<RangePreset>(settings.exportRange);
   const [format, setFormat] = useState<ExportFormat>(settings.exportFormat);
@@ -38,8 +39,8 @@ export function ExportScreen() {
   }, [preset, custom, settings.weekStartsOn, shifts, today]);
 
   const report = useMemo(
-    () => buildReport(shifts, range, settings, Date.now()),
-    [shifts, range, settings],
+    () => buildReport(shifts, range, settings, Date.now(), dayNotes),
+    [shifts, dayNotes, range, settings],
   );
 
   // Build the file ahead of the tap: iOS only allows the share sheet directly
@@ -144,7 +145,7 @@ export function ExportScreen() {
           </div>
         </div>
         <p className="muted small">
-          {t('export.days', { n: report.workedDays.length })} ·{' '}
+          {t('export.days', { n: report.listedDays.length })} ·{' '}
           {t('export.timesUsed', {
             kind: settings.useRawInReports ? t('export.timesRaw') : t('export.timesRounded'),
           })}

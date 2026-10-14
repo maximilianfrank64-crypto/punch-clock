@@ -3,11 +3,12 @@ import { calcShift } from '../../core/calc';
 import { formatClock, formatDuration, formatMoney, formatTime } from '../../core/format';
 import { getStatus, openBreak } from '../../core/punch';
 import { buildReport } from '../../core/report';
-import { periodRange } from '../../core/periods';
-import type { Shift, Stamp } from '../../core/types';
+import { dayKey, periodRange } from '../../core/periods';
+import type { Stamp } from '../../core/types';
 import { selectActive, useApp } from '../../store/appStore';
 import { useNow, useSettings, useT } from '../../ui/hooks';
 import { Icon } from '../../ui/icons';
+import { DayNoteField } from '../daynote/DayNote';
 
 function StampTime({ stamp, timeFormat }: { stamp: Stamp; timeFormat: '12h' | '24h' }) {
   const t = useT();
@@ -20,35 +21,6 @@ function StampTime({ stamp, timeFormat }: { stamp: Stamp; timeFormat: '12h' | '2
         <span className="muted small"> ({t('punch.rounded', { time: raw })})</span>
       )}
     </>
-  );
-}
-
-function NoteEditor({ shift }: { shift: Shift }) {
-  const t = useT();
-  const saveShift = useApp((s) => s.saveShift);
-  const [text, setText] = useState(shift.note);
-  const [open, setOpen] = useState(shift.note.length > 0);
-  if (!open) {
-    return (
-      <button type="button" className="link-btn" onClick={() => setOpen(true)}>
-        <Icon name="note" width={18} height={18} /> {t('punch.addNote')}
-      </button>
-    );
-  }
-  return (
-    <div className="field note-field">
-      <label htmlFor="shift-note">{t('punch.note')}</label>
-      <textarea
-        id="shift-note"
-        rows={2}
-        value={text}
-        placeholder={t('punch.notePlaceholder')}
-        onChange={(e) => setText(e.target.value)}
-        onBlur={() => {
-          if (text !== shift.note) void saveShift({ ...shift, note: text });
-        }}
-      />
-    </div>
   );
 }
 
@@ -199,7 +171,7 @@ export function HomeScreen() {
         )}
       </div>
 
-      {active && <NoteEditor key={active.id} shift={active} />}
+      <DayNoteField date={dayKey(now)} label={t('daynote.today')} />
     </div>
   );
 }

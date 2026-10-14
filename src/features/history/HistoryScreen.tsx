@@ -16,6 +16,7 @@ import { useApp } from '../../store/appStore';
 import { EmptyState } from '../../ui/components';
 import { useNow, useSettings, useT } from '../../ui/hooks';
 import { Icon } from '../../ui/icons';
+import { DayNoteDialog } from '../daynote/DayNote';
 import { ShiftEditor } from './ShiftEditor';
 
 const UNITS: PeriodUnit[] = ['day', 'week', 'month'];
@@ -24,18 +25,20 @@ export function HistoryScreen() {
   const t = useT();
   const settings = useSettings();
   const shifts = useApp((s) => s.shifts);
+  const dayNotes = useApp((s) => s.dayNotes);
   const [unit, setUnit] = useState<PeriodUnit>('week');
   const [ref, setRef] = useState(() => Date.now());
   const [editing, setEditing] = useState<{ shift: Shift | undefined } | null>(null);
+  const [noteDate, setNoteDate] = useState<string | null>(null);
   const now = useNow(30_000);
   const lang = settings.language;
 
   const range = periodRange(unit, ref, settings.weekStartsOn);
   const report = useMemo(
-    () => buildReport(shifts, range, settings, now),
+    () => buildReport(shifts, range, settings, now, dayNotes),
     // range is derived from unit/ref/weekStartsOn
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [shifts, settings, now, range.from, range.to],
+    [shifts, dayNotes, settings, now, range.from, range.to],
   );
   const byId = useMemo(() => new Map(shifts.map((s) => [s.id, s])), [shifts]);
   const containsToday = range.from <= dayKey(now) && dayKey(now) <= range.to;
@@ -122,16 +125,51 @@ export function HistoryScreen() {
         )}
       </div>
 
-      {report.workedDays.length === 0 ? (
-        <EmptyState icon="history" title={t('history.empty')} hint={t('history.emptyHint')} />
+      {report.listedDays.length === 0 ? (
+        <EmptyState
+          icon="history"
+          title={t('history.empty')}
+          hint={t('history.emptyHint')}
+          action={
+            unit === 'day' ? (
+              <button type="button" className="btn" onClick={() => setNoteDate(range.from)}>
+                <Icon name="note" width={18} height={18} /> {t('daynote.add')}
+              </button>
+            ) : undefined
+          }
+        />
       ) : (
         <ol className="day-list">
-          {[...report.workedDays].reverse().map((day) => (
+          {[...report.listedDays].reverse().map((day) => (
             <li key={day.date} className="day card">
               <div className="day-head">
                 <h3>{formatDayShort(day.date, lang)}</h3>
-                <span className="day-total">{dur(day.netMs)}</span>
+                <span className="day-head-actions">
+                  {!day.note && (
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      aria-label={t('daynote.add')}
+                      title={t('daynote.add')}
+                      onClick={() => setNoteDate(day.date)}
+                    >
+                      <Icon name="note" width={18} height={18} />
+                    </button>
+                  )}
+                  {day.shiftCount > 0 && <span className="day-total">{dur(day.netMs)}</span>}
+                </span>
               </div>
+              {day.note && (
+                <button
+                  type="button"
+                  className="day-note"
+                  aria-label={`${t('daynote.edit')}: ${day.note}`}
+                  onClick={() => setNoteDate(day.date)}
+                >
+                  <Icon name="note" width={16} height={16} />
+                  <span>{day.note}</span>
+                </button>
+              )}
               <ul className="shift-list">
                 {day.shifts.map((row) => {
                   const shift = byId.get(row.id);
@@ -185,6 +223,8 @@ export function HistoryScreen() {
         <Icon name="plus" />
         <span>{t('history.addEntry')}</span>
       </button>
+
+      <DayNoteDialog date={noteDate} onClose={() => setNoteDate(null)} />
 
       <ShiftEditor
         open={editing !== null}

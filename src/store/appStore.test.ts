@@ -8,6 +8,7 @@ describe('app store persistence', () => {
   beforeEach(async () => {
     await db.shifts.clear();
     await db.kv.clear();
+    await db.dayNotes.clear();
     await useApp.getState().init();
   });
 
@@ -30,6 +31,20 @@ describe('app store persistence', () => {
     stored = await loadAll();
     expect(getStatus(stored.shifts[0])).toBe('off');
     expect(stored.shifts[0]!.breaks[0]!.end).not.toBeNull();
+  });
+
+  it('day notes are saved, trimmed, survive a restart, and empty text removes them', async () => {
+    await useApp.getState().setDayNote('2026-10-14', '  Release day  ');
+    expect((await loadAll()).dayNotes).toEqual([
+      expect.objectContaining({ date: '2026-10-14', text: 'Release day' }),
+    ]);
+    useApp.setState({ dayNotes: {} });
+    await useApp.getState().init();
+    expect(useApp.getState().dayNotes['2026-10-14']?.text).toBe('Release day');
+
+    await useApp.getState().setDayNote('2026-10-14', '   ');
+    expect((await loadAll()).dayNotes).toHaveLength(0);
+    expect(useApp.getState().dayNotes['2026-10-14']).toBeUndefined();
   });
 
   it('double punch-in is ignored, not duplicated', async () => {

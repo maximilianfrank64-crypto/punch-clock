@@ -61,12 +61,21 @@ export function buildPdf(report: Report, ctx: ExportContext): Uint8Array {
   autoTable(doc, {
     ...base,
     startY: y,
-    head: [[l.date, l.start, l.end, l.breaks, l.worked, l.dayTotal, l.note].map(s)],
+    head: [[l.date, l.start, l.end, l.breaks, l.worked, l.dayTotal, l.note, l.dayNote].map(s)],
     body: rows.length
       ? rows.map((r) =>
-          [`${r.weekday} ${r.date}`, r.start, r.end, r.breaks, r.worked, r.dayTotal, r.note].map(s),
+          [
+            `${r.weekday} ${r.date}`,
+            r.start,
+            r.end,
+            r.breaks,
+            r.worked,
+            r.dayTotal,
+            r.note,
+            r.dayNote,
+          ].map(s),
         )
-      : [[{ content: s(l.noData), colSpan: 7 }]],
+      : [[{ content: s(l.noData), colSpan: 8 }]],
     columnStyles: {
       0: { cellWidth: 72 },
       5: { fontStyle: 'bold' },

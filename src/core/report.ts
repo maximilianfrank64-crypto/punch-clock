@@ -36,6 +36,8 @@ export interface Totals {
 export interface DayReport extends Totals {
   date: string;
   shifts: ShiftRow[];
+  /** Optional free-text note for the whole day ('' if none). */
+  note: string;
 }
 
 export interface PeriodReport extends Totals {
@@ -53,8 +55,8 @@ export interface Report {
   useRaw: boolean;
   currency: string | null;
   days: DayReport[];
-  /** Only days that have shifts (for listings and exports). */
-  workedDays: DayReport[];
+  /** Days that have shifts or a day note (for listings and exports). */
+  listedDays: DayReport[];
   weeks: PeriodReport[];
   months: PeriodReport[];
   total: Totals;
@@ -121,6 +123,8 @@ export function buildReport(
   range: DateRange,
   settings: Settings,
   now: number,
+  /** Day notes keyed by yyyy-MM-dd. */
+  dayNotes: Readonly<Record<string, { text: string }>> = {},
 ): Report {
   const useRaw = settings.useRawInReports;
   const todayKey = dayKey(now);
@@ -159,7 +163,7 @@ export function buildReport(
     }
     t.targetMs = dailyTarget(date, settings, todayKey);
     t.earnings = earningsFor(t.netMs, settings);
-    return { date, shifts, ...finish(t) };
+    return { date, shifts, note: dayNotes[date]?.text.trim() ?? '', ...finish(t) };
   });
 
   const weeks = groupPeriods(days, (d) => weekKey(dayStart(d.date), settings.weekStartsOn));
@@ -191,7 +195,7 @@ export function buildReport(
     useRaw,
     currency: settings.rate.enabled ? settings.rate.currency : null,
     days,
-    workedDays: days.filter((d) => d.shiftCount > 0),
+    listedDays: days.filter((d) => d.shiftCount > 0 || d.note !== ''),
     weeks,
     months,
     total,

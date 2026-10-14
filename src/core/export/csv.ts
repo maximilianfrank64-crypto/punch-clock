@@ -24,7 +24,7 @@ export function buildCsv(report: Report, ctx: ExportContext): string {
   const sep = ctx.lang === 'de' ? ';' : ',';
   const l = ctx.labels;
   const lines: (string | number)[][] = [];
-  const num = (n: number) => (ctx.lang === 'de' ? String(n).replace('.', ',') : n);
+  const num = (n: number | '') => (n !== '' && ctx.lang === 'de' ? String(n).replace('.', ',') : n);
 
   lines.push([l.title], [l.period, rangeText(report, ctx)], []);
   lines.push(entryHeader(ctx));

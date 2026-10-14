@@ -98,3 +98,11 @@ export interface DateRange {
   from: string;
   to: string;
 }
+
+/** Optional free-text note for a whole calendar day. */
+export interface DayNote {
+  /** Local day key, yyyy-MM-dd. */
+  date: string;
+  text: string;
+  updatedAt: number;
+}

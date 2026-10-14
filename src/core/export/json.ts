@@ -24,8 +24,9 @@ export function buildJson(report: Report): string {
     range: report.range,
     times: report.useRaw ? 'raw' : 'rounded',
     currency: report.currency,
-    days: report.workedDays.map((d) => ({
+    days: report.listedDays.map((d) => ({
       date: d.date,
+      note: d.note,
       ...totals(d),
       shifts: d.shifts.map((s) => ({
         id: s.id,

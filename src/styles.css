@@ -908,7 +908,7 @@ fieldset {
 .neg {
   color: var(--danger);
 }
-.note-field {
+.day-note-field {
   width: 100%;
   text-align: left;
 }
@@ -1095,4 +1095,41 @@ fieldset {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* ---------- Day notes ---------- */
+.day-note-field .saved {
+  color: var(--ok);
+  font-weight: 600;
+}
+.day-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.day-head .icon-btn {
+  min-width: 36px;
+  min-height: 36px;
+  color: var(--muted);
+}
+.day-note {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 8px 16px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  white-space: pre-wrap;
+  cursor: pointer;
+}
+.day-note svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--primary);
+}
+.day-note:hover {
+  background: var(--surface-2);
 }

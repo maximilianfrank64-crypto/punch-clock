@@ -21,16 +21,16 @@ describe('buildReport', () => {
   it('groups by day, week and month with totals', () => {
     const r = buildReport(data, { from: '2026-10-12', to: '2026-10-18' }, plainSettings(), NOW);
     expect(r.days).toHaveLength(7);
-    expect(r.workedDays.map((d) => d.date)).toEqual([
+    expect(r.listedDays.map((d) => d.date)).toEqual([
       '2026-10-12',
       '2026-10-13',
       '2026-10-14',
       '2026-10-15',
     ]);
-    expect(r.workedDays[1]!.netMs).toBe(8.5 * HOUR);
-    expect(r.workedDays[1]!.breakMs).toBe(30 * MIN);
+    expect(r.listedDays[1]!.netMs).toBe(8.5 * HOUR);
+    expect(r.listedDays[1]!.breakMs).toBe(30 * MIN);
     // the night shift counts for the day it started
-    expect(r.workedDays[3]!.netMs).toBe(4 * HOUR);
+    expect(r.listedDays[3]!.netMs).toBe(4 * HOUR);
     expect(r.total.netMs).toBe((8 + 8.5 + 6 + 4) * HOUR);
     expect(r.total.shiftCount).toBe(4);
     expect(r.weeks).toHaveLength(1);
@@ -99,6 +99,22 @@ describe('buildReport', () => {
     );
   });
 
+  it('lists days that only have a day note, without changing totals', () => {
+    const r = buildReport(data, { from: '2026-10-12', to: '2026-10-18' }, plainSettings(), NOW, {
+      '2026-10-17': { text: '  Weekend trip  ' },
+      '2026-10-12': { text: 'Kickoff' },
+    });
+    expect(r.listedDays.map((d) => [d.date, d.note])).toEqual([
+      ['2026-10-12', 'Kickoff'],
+      ['2026-10-13', ''],
+      ['2026-10-14', ''],
+      ['2026-10-15', ''],
+      ['2026-10-17', 'Weekend trip'],
+    ]);
+    expect(r.total.netMs).toBe((8 + 8.5 + 6 + 4) * HOUR);
+    expect(r.total.shiftCount).toBe(4);
+  });
+
   it('includes a running shift up to now', () => {
     const running = shift(at(2026, 10, 16, 18), null);
     const r = buildReport(
@@ -108,7 +124,7 @@ describe('buildReport', () => {
       NOW,
     );
     expect(r.total.netMs).toBe(2 * HOUR);
-    expect(r.workedDays[0]!.shifts[0]!.end).toBeNull();
+    expect(r.listedDays[0]!.shifts[0]!.end).toBeNull();
   });
 
   it('handles the 25-hour DST day', () => {

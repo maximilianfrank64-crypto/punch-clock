@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { mergeShifts } from '../core/backup';
+import { mergeDayNotes, mergeShifts } from '../core/backup';
 import * as punch from '../core/punch';
 import { defaultSettings, detectLanguage, sanitizeSettings } from '../core/settings';
-import type { Settings, Shift } from '../core/types';
+import type { DayNote, Settings, Shift } from '../core/types';
 import * as repo from '../db/db';
 import type { Meta } from '../db/db';
 
@@ -16,6 +16,8 @@ interface AppState {
   ready: boolean;
   loadError: string | null;
   shifts: Shift[];
+  /** Day notes keyed by yyyy-MM-dd. */
+  dayNotes: Record<string, DayNote>;
   settings: Settings;
   meta: Meta;
   toasts: Toast[];
@@ -27,10 +29,11 @@ interface AppState {
   endBreak: () => Promise<void>;
   saveShift: (shift: Shift) => Promise<void>;
   removeShift: (id: string) => Promise<void>;
+  /** Set or (with empty text) remove the note for a day. */
+  setDayNote: (date: string, text: string) => Promise<void>;
   updateSettings: (patch: Partial<Settings>) => Promise<void>;
   restore: (
-    shifts: Shift[],
-    settings: Settings | null,
+    backup: { shifts: Shift[]; dayNotes: DayNote[]; settings: Settings | null },
     mode: 'merge' | 'replace',
   ) => Promise<number>;
   updateMeta: (patch: Partial<Meta>) => Promise<void>;
@@ -41,6 +44,8 @@ interface AppState {
 
 const browserLanguage = () =>
   detectLanguage(typeof navigator === 'undefined' ? undefined : navigator.languages);
+
+const byDate = (notes: DayNote[]) => Object.fromEntries(notes.map((n) => [n.date, n]));
 
 const sortShifts = (shifts: Shift[]) => [...shifts].sort((a, b) => a.start.raw - b.start.raw);
 
@@ -73,6 +78,7 @@ export const useApp = create<AppState>()((set, get) => {
     ready: false,
     loadError: null,
     shifts: [],
+    dayNotes: {},
     settings: defaultSettings(browserLanguage()),
     meta: repo.defaultMeta(),
     toasts: [],
@@ -81,7 +87,13 @@ export const useApp = create<AppState>()((set, get) => {
       try {
         const data = await repo.loadAll();
         const settings = sanitizeSettings(data.settings, defaultSettings(browserLanguage()));
-        set({ ready: true, shifts: sortShifts(data.shifts), settings, meta: data.meta });
+        set({
+          ready: true,
+          shifts: sortShifts(data.shifts),
+          dayNotes: byDate(data.dayNotes),
+          settings,
+          meta: data.meta,
+        });
       } catch (e) {
         // e.g. IndexedDB blocked in a private window: show the app, report the problem.
         set({ ready: true, loadError: e instanceof Error ? e.message : String(e) });
@@ -106,18 +118,38 @@ export const useApp = create<AppState>()((set, get) => {
       set((s) => ({ shifts: s.shifts.filter((x) => x.id !== id) }));
     }),
 
+    setDayNote: guard(async (date, text) => {
+      const clean = text.trim();
+      if (clean === '') {
+        await repo.deleteDayNote(date);
+        set((s) => {
+          const rest = { ...s.dayNotes };
+          delete rest[date];
+          return { dayNotes: rest };
+        });
+        return;
+      }
+      const note: DayNote = { date, text: clean, updatedAt: Date.now() };
+      await repo.putDayNote(note);
+      set((s) => ({ dayNotes: { ...s.dayNotes, [date]: note } }));
+    }),
+
     updateSettings: guard(async (patch) => {
       const settings = sanitizeSettings({ ...get().settings, ...patch }, get().settings);
       await repo.saveSettings(settings);
       set({ settings });
     }),
 
-    restore: async (incoming, settings, mode) => {
-      const shifts = mode === 'replace' ? incoming : mergeShifts(get().shifts, incoming);
-      const nextSettings = mode === 'replace' && settings ? settings : get().settings;
-      await repo.replaceAll(shifts, nextSettings);
-      set({ shifts: sortShifts(shifts), settings: nextSettings });
-      return incoming.length;
+    restore: async (backup, mode) => {
+      const replace = mode === 'replace';
+      const shifts = replace ? backup.shifts : mergeShifts(get().shifts, backup.shifts);
+      const notes = replace
+        ? backup.dayNotes
+        : mergeDayNotes(Object.values(get().dayNotes), backup.dayNotes);
+      const nextSettings = replace && backup.settings ? backup.settings : get().settings;
+      await repo.replaceAll(shifts, notes, nextSettings);
+      set({ shifts: sortShifts(shifts), dayNotes: byDate(notes), settings: nextSettings });
+      return backup.shifts.length;
     },
 
     updateMeta: async (patch) => {
@@ -130,6 +162,7 @@ export const useApp = create<AppState>()((set, get) => {
       await repo.clearAll();
       set({
         shifts: [],
+        dayNotes: {},
         settings: defaultSettings(get().settings.language),
         meta: repo.defaultMeta(),
       });

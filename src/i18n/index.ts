@@ -44,6 +44,7 @@ export function exportLabels(lang: Language): ExportLabels {
     'hoursDecimal',
     'dayTotal',
     'note',
+    'dayNote',
     'week',
     'month',
     'total',

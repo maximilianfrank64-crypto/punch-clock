@@ -12,6 +12,7 @@ export function BackupScreen() {
   const t = useT();
   const settings = useSettings();
   const shifts = useApp((s) => s.shifts);
+  const dayNotes = useApp((s) => s.dayNotes);
   const meta = useApp((s) => s.meta);
   const updateMeta = useApp((s) => s.updateMeta);
   const restore = useApp((s) => s.restore);
@@ -23,7 +24,7 @@ export function BackupScreen() {
 
   const makeBackup = async () => {
     const now = Date.now();
-    const backup = createBackup(shifts, settings, now);
+    const backup = createBackup(shifts, settings, now, Object.values(dayNotes));
     const res = await deliverFile(
       JSON.stringify(backup, null, 2),
       `punch-clock-backup_${dayKey(now)}.json`,
@@ -36,7 +37,7 @@ export function BackupScreen() {
   const doRestore = async (p: { backup: BackupFile; skipped: number }) => {
     setPending(null);
     try {
-      const n = await restore(p.backup.shifts, p.backup.settings, mode);
+      const n = await restore(p.backup, mode);
       toast(t('backup.restored', { n }));
       if (p.skipped) toast(t('backup.skipped', { n: p.skipped }));
     } catch (e) {

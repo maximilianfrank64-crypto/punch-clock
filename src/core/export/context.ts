@@ -24,6 +24,7 @@ export interface ExportLabels {
   hoursDecimal: string;
   dayTotal: string;
   note: string;
+  dayNote: string;
   week: string;
   month: string;
   total: string;
@@ -56,10 +57,14 @@ export interface FlatRow {
   end: string;
   breaks: string;
   worked: string;
-  hours: number;
+  /** '' on rows without a shift (a day that only has a note). */
+  hours: number | '';
   /** Filled on the last row of each day only. */
   dayTotal: string;
+  /** Shift note. */
   note: string;
+  /** Day note, filled on the first row of each day only. */
+  dayNote: string;
 }
 
 export const dur = (ms: number, ctx: ExportContext, signed = false) =>
@@ -72,10 +77,30 @@ export function weekdayShort(key: string, lang: Language): string {
   );
 }
 
-/** One row per shift, with the day total on the day's last row. */
+/**
+ * One row per shift, with the day total on the day's last row and the day note
+ * on its first. A day with only a note gets a single row without times.
+ */
 export function flatRows(report: Report, ctx: ExportContext): FlatRow[] {
   const rows: FlatRow[] = [];
-  for (const day of report.workedDays) {
+  for (const day of report.listedDays) {
+    const date = formatDate(day.date, ctx.lang);
+    const weekday = weekdayShort(day.date, ctx.lang);
+    if (day.shifts.length === 0) {
+      rows.push({
+        date,
+        weekday,
+        start: '',
+        end: '',
+        breaks: '',
+        worked: '',
+        hours: '',
+        dayTotal: '',
+        note: '',
+        dayNote: day.note,
+      });
+      continue;
+    }
     day.shifts.forEach((s, i) => {
       const endText =
         s.end === null
@@ -83,8 +108,8 @@ export function flatRows(report: Report, ctx: ExportContext): FlatRow[] {
           : formatTime(s.end, ctx.timeFormat) +
             (crossesMidnight(s.start, s.end) ? ` ${ctx.labels.nextDay}` : '');
       rows.push({
-        date: formatDate(day.date, ctx.lang),
-        weekday: weekdayShort(day.date, ctx.lang),
+        date,
+        weekday,
         start: formatTime(s.start, ctx.timeFormat),
         end: endText,
         breaks: dur(s.breakMs, ctx),
@@ -92,6 +117,7 @@ export function flatRows(report: Report, ctx: ExportContext): FlatRow[] {
         hours: hoursDecimal(s.netMs),
         dayTotal: i === day.shifts.length - 1 ? dur(day.netMs, ctx) : '',
         note: s.note,
+        dayNote: i === 0 ? day.note : '',
       });
     });
   }
@@ -134,7 +160,7 @@ export function rangeText(report: Report, ctx: ExportContext): string {
 
 export function footnotes(report: Report, ctx: ExportContext): string[] {
   const notes = [report.useRaw ? ctx.labels.rawTimesNote : ctx.labels.roundedTimesNote];
-  if (report.workedDays.some((d) => d.shifts.some((s) => s.autoBreakMs > 0))) {
+  if (report.listedDays.some((d) => d.shifts.some((s) => s.autoBreakMs > 0))) {
     notes.push(ctx.labels.autoBreakNote);
   }
   return notes;
@@ -152,6 +178,7 @@ export const entryHeader = (ctx: ExportContext) => {
     l.hoursDecimal,
     l.dayTotal,
     l.note,
+    l.dayNote,
   ];
 };
 
@@ -165,6 +192,7 @@ export const entryCells = (r: FlatRow) => [
   r.hours,
   r.dayTotal,
   r.note,
+  r.dayNote,
 ];
 
 /** File name stem, e.g. timesheet_2026-10-01_2026-10-31 */
