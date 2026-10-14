@@ -1,0 +1,147 @@
+import { normalizeShift } from './punch';
+import { sanitizeSettings } from './settings';
+import type { Break, Settings, Shift, Stamp } from './types';
+
+export const BACKUP_APP_ID = 'punch-clock';
+export const BACKUP_VERSION = 1;
+
+export interface BackupFile {
+  app: typeof BACKUP_APP_ID;
+  version: number;
+  exportedAt: string;
+  settings: Settings;
+  shifts: Shift[];
+}
+
+export function createBackup(shifts: Shift[], settings: Settings, now: number): BackupFile {
+  return {
+    app: BACKUP_APP_ID,
+    version: BACKUP_VERSION,
+    exportedAt: new Date(now).toISOString(),
+    settings,
+    shifts,
+  };
+}
+
+export type ParseResult =
+  | { ok: true; backup: BackupFile; skipped: number }
+  | { ok: false; error: 'invalid-json' | 'not-a-backup' | 'newer-version' };
+
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+const isTime = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+
+function parseStamp(v: unknown): Stamp | null {
+  if (isTime(v)) return { raw: v, rounded: v };
+  if (!isObj(v) || !isTime(v.raw)) return null;
+  return { raw: v.raw, rounded: isTime(v.rounded) ? v.rounded : v.raw };
+}
+
+function parseShift(v: unknown, now: number): Shift | null {
+  if (!isObj(v) || typeof v.id !== 'string' || !v.id) return null;
+  const start = parseStamp(v.start);
+  if (!start) return null;
+  const end = v.end === null || v.end === undefined ? null : parseStamp(v.end);
+  if (v.end != null && !end) return null;
+  const breaks: Break[] = [];
+  if (Array.isArray(v.breaks)) {
+    for (const b of v.breaks) {
+      if (!isObj(b)) continue;
+      const bs = parseStamp(b.start);
+      if (!bs) continue;
+      const be = b.end == null ? null : parseStamp(b.end);
+      breaks.push({
+        id: typeof b.id === 'string' ? b.id : `${v.id}-b${breaks.length}`,
+        start: bs,
+        end: be,
+      });
+    }
+  }
+  return normalizeShift({
+    id: v.id,
+    start,
+    end,
+    breaks,
+    note: typeof v.note === 'string' ? v.note : '',
+    source: v.source === 'manual' ? 'manual' : 'punch',
+    createdAt: isTime(v.createdAt) ? v.createdAt : now,
+    updatedAt: isTime(v.updatedAt) ? v.updatedAt : now,
+  });
+}
+
+/** Validate an untrusted backup file. Invalid shifts are skipped and counted. */
+export function parseBackup(text: string, now: number): ParseResult {
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return { ok: false, error: 'invalid-json' };
+  }
+  if (!isObj(data) || data.app !== BACKUP_APP_ID || !Array.isArray(data.shifts)) {
+    return { ok: false, error: 'not-a-backup' };
+  }
+  if (typeof data.version === 'number' && data.version > BACKUP_VERSION) {
+    return { ok: false, error: 'newer-version' };
+  }
+  const shifts: Shift[] = [];
+  let skipped = 0;
+  for (const s of data.shifts) {
+    const parsed = parseShift(s, now);
+    if (parsed) shifts.push(parsed);
+    else skipped++;
+  }
+  // Only one shift may be running.
+  const running = shifts.filter((s) => s.end === null).sort((a, b) => b.start.raw - a.start.raw);
+  for (const extra of running.slice(1)) {
+    const i = shifts.indexOf(extra);
+    shifts.splice(i, 1);
+    skipped++;
+  }
+  return {
+    ok: true,
+    skipped,
+    backup: {
+      app: BACKUP_APP_ID,
+      version: BACKUP_VERSION,
+      exportedAt: typeof data.exportedAt === 'string' ? data.exportedAt : '',
+      settings: sanitizeSettings(data.settings),
+      shifts,
+    },
+  };
+}
+
+/**
+ * Merge imported shifts into existing ones: same id → the more recently
+ * updated version wins. If that leaves two running shifts, the newer one is kept running.
+ */
+export function mergeShifts(existing: Shift[], incoming: Shift[]): Shift[] {
+  const byId = new Map(existing.map((s) => [s.id, s]));
+  for (const s of incoming) {
+    const cur = byId.get(s.id);
+    if (!cur || s.updatedAt >= cur.updatedAt) byId.set(s.id, s);
+  }
+  const all = [...byId.values()];
+  const running = all.filter((s) => s.end === null).sort((a, b) => b.start.raw - a.start.raw);
+  return all.filter((s) => s.end !== null || s === running[0]);
+}
+
+const DAY = 86_400_000;
+
+/**
+ * Whether to show the "please back up" reminder: only when there is data,
+ * the reminder is enabled, and neither a backup nor a dismissal happened
+ * within the last `intervalDays`.
+ */
+export function backupDue(opts: {
+  now: number;
+  intervalDays: number;
+  hasData: boolean;
+  lastBackupAt: number | null;
+  dismissedAt: number | null;
+  firstDataAt: number | null;
+}): boolean {
+  if (!opts.hasData || opts.intervalDays <= 0) return false;
+  const interval = opts.intervalDays * DAY;
+  const last = Math.max(opts.lastBackupAt ?? 0, opts.dismissedAt ?? 0, opts.firstDataAt ?? 0);
+  return opts.now - last >= interval;
+}
